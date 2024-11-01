@@ -1,45 +1,55 @@
 const form = document.getElementById("countryForm");
 const ctx = document.getElementById("inflationChart").getContext("2d");
 const chartTypeInput = document.getElementById("chartType");
+const countryCode = document.getElementById("country").value.toUpperCase().trim();
 
 let inflationChart;
-
 async function obtainData(code) {
-    const apiURL = `https://api.worldbank.org/v2/country/${code}/indicator/FP.CPI.TOTL.ZG?format=json`;
+    const apiURL = `https://api.api-ninjas.com/v1/inflation?country=${code}`;
+    const apiKey = '3q0pCgnHwKYPZXxSSwvrcw==vwparzahmce0WFX4';
 
     try {
-        const response = await fetch(apiURL);
-        if(!response.ok) throw new Error()
+        const response = await fetch(apiURL, {
+            headers: {
+                'X-Api-Key': apiKey
+            }
+        });
+
+        console.log(`Fetching data for country code: ${code}`);
+        
+        if (!response.ok) throw new Error("Failed to fetch data from API");
 
         const data = await response.json();
+        console.log("Raw API response:", data); 
 
-        if(data[1]) {
-            return data[1].map(entry => ({
-                date: entry.date,
-                inflation: entry.value
+        if (data.length) {
+            return data.map(entry => ({
+                date: entry.year,
+                inflation: entry.inflation_rate
             })).reverse();
-        
         } else {
-            throw new Error("Data Unavailable for this country");
+            throw new Error("Data unavailable for this country or invalid country code");
         }
     } catch (error) {
+        console.error("Error in obtainData:", error.message);
         alert(error.message);
         return [];
     }
 }
 
-form.addEventListener("submit", async (e) => {
-    e.defaultDefault();
 
-    const countryCode = document.getElementById("country").value;
+form.addEventListener("submit", async (e) => {
+    e.preventDefault();  
+
+    const countryCode = document.getElementById("country").value.toUpperCase().trim();
     const chartType = chartTypeInput.value;
 
     const inflationData = await obtainData(countryCode);
 
-    if(inflationData.length > 0) {
+    if (inflationData.length > 0) {
         const labels = inflationData.map(entry => entry.date);
         const values = inflationData.map(entry => entry.inflation);
-        // Clearing
+
         if (inflationChart) {
             inflationChart.destroy();
         }
@@ -58,7 +68,7 @@ form.addEventListener("submit", async (e) => {
             },
             options: {
                 responsive: true,
-                plugin: {
+                plugins: {  
                     legend: {
                         display: true,
                         position: "top"
@@ -71,5 +81,3 @@ form.addEventListener("submit", async (e) => {
         console.log("No data available for the selected country code.");
     }
 });
-
-
