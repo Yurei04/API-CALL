@@ -5,10 +5,19 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Document</title>
     <link rel="stylesheet" href="./css/styles.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
 <body>
+    <form id="countryForm">
+        <label for="country">Enter Country Code (e.g., US, CA, GB): </label>
+        <input type="text" id="country" name="country" required>
+        <!--Add later Changing of graph type-->
+        <button type="submit">Get Inflation Data</button>
+      </form>
     
-
+    <div class="chart-container">
+        <canvas id="inflationChart"></canvas>
+    </div>
     <script src="./js/index.js"></script>
 </body>
 </html>
