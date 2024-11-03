@@ -1,0 +1,44 @@
+body {
+    background-color: #1e2a38;
+    color: #d1e8ff;
+    font-family: Arial, sans-serif;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    margin: 0;
+    padding: 0;
+}
+h1, label {
+    color: #87cefa;
+}
+.form-container, .examples {
+    margin: 1em;
+}
+#stockSymbol, #chartType, button {
+    padding: 0.5em;
+    border-radius: 4px;
+    border: none;
+    margin: 0.2em 0;
+}
+#stockSymbol, #chartType {
+    width: 100%;
+    background-color: #324b63;
+    color: #d1e8ff;
+}
+button {
+    background-color: #4a90e2;
+    color: #ffffff;
+    cursor: pointer;
+}
+button:hover {
+    background-color: #366fa3;
+}
+.examples {
+    font-size: 0.9em;
+    color: #a9d1ff;
+}
+.chart-container {
+    width: 80%;
+    max-width: 600px;
+    margin-top: 1em;
+}

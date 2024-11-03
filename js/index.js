@@ -1,11 +1,17 @@
-const form = document.getElementById("countryForm");
-const ctx = document.getElementById("inflationChart").getContext("2d");
-const chartTypeInput = document.getElementById("chartType");
-const countryCode = document.getElementById("country").value.toUpperCase().trim();
+const form = document.getElementById("stockForm");
+const ctx = document.getElementById("stockChart").getContext("2d");
 
-let inflationChart;
-async function obtainData(code) {
-    const apiURL = `https://api.api-ninjas.com/v1/inflation?country=${code}`;
+let stockChart;
+
+document.querySelectorAll('.symbol-example').forEach(item => {
+    item.style.cursor = "pointer";
+    item.addEventListener('click', () => {
+        document.getElementById('stockSymbol').value = item.dataset.symbol;
+    });
+});
+
+async function fetchStockData(symbol) {
+    const apiURL = `https://api.api-ninjas.com/v1/stock?symbol=${symbol}`;
     const apiKey = '3q0pCgnHwKYPZXxSSwvrcw==vwparzahmce0WFX4';
 
     try {
@@ -15,60 +21,70 @@ async function obtainData(code) {
             }
         });
 
-        console.log(`Fetching data for country code: ${code}`);
-        
-        if (!response.ok) throw new Error("Failed to fetch data from API");
+        if (!response.ok) throw new Error("Failed to fetch stock data");
 
         const data = await response.json();
-        console.log("Raw API response:", data); 
+        console.log("Raw Stock Data:", data);
 
         if (data.length) {
-            return data.map(entry => ({
-                date: entry.year,
-                inflation: entry.inflation_rate
-            })).reverse();
+            return {
+                open: data[0].open,
+                high: data[0].high,
+                low: data[0].low,
+                close: data[0].close
+            };
         } else {
-            throw new Error("Data unavailable for this country or invalid country code");
+            throw new Error("Data unavailable for this stock symbol");
         }
     } catch (error) {
-        console.error("Error in obtainData:", error.message);
+        console.error("Error fetching stock data:", error.message);
         alert(error.message);
-        return [];
+        return null;
     }
 }
 
-
 form.addEventListener("submit", async (e) => {
-    e.preventDefault();  
+    e.preventDefault();
 
-    const countryCode = document.getElementById("country").value.toUpperCase().trim();
-    const chartType = chartTypeInput.value;
+    const stockSymbol = document.getElementById("stockSymbol").value.toUpperCase().trim();
+    const chartType = document.getElementById("chartType").value;
 
-    const inflationData = await obtainData(countryCode);
+    const stockData = await fetchStockData(stockSymbol);
 
-    if (inflationData.length > 0) {
-        const labels = inflationData.map(entry => entry.date);
-        const values = inflationData.map(entry => entry.inflation);
+    if (stockData) {
+        const labels = ["Open", "High", "Low", "Close"];
+        const values = [stockData.open, stockData.high, stockData.low, stockData.close];
 
-        if (inflationChart) {
-            inflationChart.destroy();
+        // Clear the chart if it already exists
+        if (stockChart) {
+            stockChart.destroy();
         }
 
-        inflationChart = new Chart(ctx, {
+        stockChart = new Chart(ctx, {
             type: chartType,
             data: {
                 labels: labels,
                 datasets: [{
-                    label: `Inflation Data for ${countryCode}`,
+                    label: `Stock Prices for ${stockSymbol}`,
                     data: values,
-                    backgroundColor: 'rgba(75, 192, 192, 0.2)',
-                    borderColor: 'rgba(75, 192, 192, 1)',
+                    backgroundColor: chartType === "pie" ? [
+                        'rgba(255, 99, 132, 0.2)',
+                        'rgba(54, 162, 235, 0.2)',
+                        'rgba(255, 206, 86, 0.2)',
+                        'rgba(75, 192, 192, 0.2)'
+                    ] : 'rgba(75, 192, 192, 0.2)',
+                    borderColor: chartType === "pie" ? [
+                        'rgba(255, 99, 132, 1)',
+                        'rgba(54, 162, 235, 1)',
+                        'rgba(255, 206, 86, 1)',
+                        'rgba(75, 192, 192, 1)'
+                    ] : 'rgba(75, 192, 192, 1)',
                     borderWidth: 1
                 }]
             },
             options: {
                 responsive: true,
-                plugins: {  
+                plugins: {
                     legend: {
                         display: true,
                         position: "top"
@@ -76,8 +92,8 @@ form.addEventListener("submit", async (e) => {
                 }
             }
         });
-        console.log("Chart successfully created.");
+        console.log("Chart created for stock data.");
     } else {
-        console.log("No data available for the selected country code.");
+        console.log("No data available for the entered stock symbol.");
     }
 });
