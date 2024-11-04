@@ -1,99 +1,65 @@
-const form = document.getElementById("stockForm");
-const ctx = document.getElementById("stockChart").getContext("2d");
+// Static country-to-code mapping
+const countryCodes = {
+    "Austria": "AT",
+    "Philippines": "PH",
+    "Norway": "NO",
+    "Belgium": "BE",
+    "United States": "US",
+    "Germany": "DE",
+    "Japan": "JP",
+    "Brazil": "BR"
+    // Add more as needed
+};
 
-let stockChart;
+const apiURL = 'https://api.worldbank.org/v2/country';
+const countryForm = document.getElementById('countryForm');
+const countryInput = document.getElementById('countryInput');
+const resultDiv = document.getElementById('result');
 
-document.querySelectorAll('.symbol-example').forEach(item => {
-    item.style.cursor = "pointer";
-    item.addEventListener('click', () => {
-        document.getElementById('stockSymbol').value = item.dataset.symbol;
-    });
-});
-
-async function fetchStockData(symbol) {
-    const apiURL = `https://api.api-ninjas.com/v1/stock?symbol=${symbol}`;
-    const apiKey = '3q0pCgnHwKYPZXxSSwvrcw==vwparzahmce0WFX4';
-
+// Fetch inflation data for the specified country code
+async function fetchInflationData(countryCode) {
     try {
-        const response = await fetch(apiURL, {
-            headers: {
-                'X-Api-Key': apiKey
-            }
-        });
-
-        if (!response.ok) throw new Error("Failed to fetch stock data");
-
+        const response = await fetch(`${apiURL}/${countryCode}/indicator/FP.CPI.TOTL?format=json`);
         const data = await response.json();
-        console.log("Raw Stock Data:", data);
 
-        if (data.length) {
-            return {
-                open: data[0].open,
-                high: data[0].high,
-                low: data[0].low,
-                close: data[0].close
-            };
+        // Ensure there is data available
+        if (data && data[1] && data[1].length) {
+            return data[1][0];  // Get the most recent inflation data entry
         } else {
-            throw new Error("Data unavailable for this stock symbol");
+            return null;
         }
     } catch (error) {
-        console.error("Error fetching stock data:", error.message);
-        alert(error.message);
+        console.error("Error fetching data:", error);
         return null;
     }
 }
 
-form.addEventListener("submit", async (e) => {
-    e.preventDefault();
-
-    const stockSymbol = document.getElementById("stockSymbol").value.toUpperCase().trim();
-    const chartType = document.getElementById("chartType").value;
-
-    const stockData = await fetchStockData(stockSymbol);
-
-    if (stockData) {
-        const labels = ["Open", "High", "Low", "Close"];
-        const values = [stockData.open, stockData.high, stockData.low, stockData.close];
-
-        // Clear the chart if it already exists
-        if (stockChart) {
-            stockChart.destroy();
-        }
-
-        stockChart = new Chart(ctx, {
-            type: chartType,
-            data: {
-                labels: labels,
-                datasets: [{
-                    label: `Stock Prices for ${stockSymbol}`,
-                    data: values,
-                    backgroundColor: chartType === "pie" ? [
-                        'rgba(255, 99, 132, 0.2)',
-                        'rgba(54, 162, 235, 0.2)',
-                        'rgba(255, 206, 86, 0.2)',
-                        'rgba(75, 192, 192, 0.2)'
-                    ] : 'rgba(75, 192, 192, 0.2)',
-                    borderColor: chartType === "pie" ? [
-                        'rgba(255, 99, 132, 1)',
-                        'rgba(54, 162, 235, 1)',
-                        'rgba(255, 206, 86, 1)',
-                        'rgba(75, 192, 192, 1)'
-                    ] : 'rgba(75, 192, 192, 1)',
-                    borderWidth: 1
-                }]
-            },
-            options: {
-                responsive: true,
-                plugins: {
-                    legend: {
-                        display: true,
-                        position: "top"
-                    }
-                }
-            }
-        });
-        console.log("Chart created for stock data.");
+// Display the fetched data in the result div
+function displayData(data) {
+    if (data) {
+        resultDiv.innerHTML = `
+            <p><strong>Country:</strong> ${countryInput.value}</p>
+            <p><strong>Monthly Rate (%):</strong> ${data.value ? data.value.toFixed(2) : 'N/A'}</p>
+            <p><strong>Period:</strong> ${data.date}</p>
+            <p><strong>Indicator:</strong> ${data.indicator.value}</p>
+        `;
     } else {
-        console.log("No data available for the entered stock symbol.");
+        resultDiv.innerHTML = `<p>No data found for the specified country.</p>`;
     }
+}
+
+// Handle form submission to fetch and display data
+countryForm.addEventListener('submit', async (event) => {
+    event.preventDefault();
+    const countryName = countryInput.value.trim();
+    const countryCode = countryCodes[countryName];
+
+    if (!countryCode) {
+        resultDiv.innerHTML = `<p>Invalid country name. Please try again.</p>`;
+        return;
+    }
+
+    // Fetch and display data
+    const data = await fetchInflationData(countryCode);
+    displayData(data);
 });

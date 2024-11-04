@@ -3,35 +3,20 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>API - CALL</title>
+    <title>Country Inflation Data</title>
     <link rel="stylesheet" href="./css/styles.css">
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
 <body>
-    <form id="stockForm">
-        <label for="stockSymbol">Enter Stock Symbol (e.g., AAPL, GOOGL):</label>
-        <input type="text" id="stockSymbol" required>
-        
-        <label for="chartType">Select Chart Type:</label>
-        <select id="chartType">
-            <option value="bar">Bar</option>
-            <option value="line">Line</option>
-            <option value="pie">Pie</option>
-        </select>
+    <div class="container">
+        <h1>Country Inflation Data</h1>
+        <form id="countryForm">
+            <label for="countryInput">Enter Country Name:</label>
+            <input type="text" id="countryInput" placeholder="e.g., Norway, Belgium" required>
+            <button type="submit">Get Inflation Data</button>
+        </form>
 
-        <button type="submit">Get Stock Data</button>
-    </form>
-    <div class="examples">
-        <p>Try these symbols: 
-            <span class="symbol-example" data-symbol="AAPL">AAPL</span>, 
-            <span class="symbol-example" data-symbol="GOOGL">GOOGL</span>, 
-            <span class="symbol-example" data-symbol="MSFT">MSFT</span>, 
-            <span class="symbol-example" data-symbol="TSLA">TSLA</span>
-        </p>
-    </div>
-
-    <div class="chart-container">
-        <canvas id="stockChart"></canvas>
+        <div id="result" class="result">
+        </div>
     </div>
     <script src="./js/index.js"></script>
 </body>
